@@ -16,9 +16,16 @@ def main():
     ads_heat_data_plot()
 
 def ads_heat_data_plot():
-    file = '1211-UiO66-adsorption-303K_1.csv'
-    mass = 24.4 / 1000 # g
+
+    #file = '1211-UiO66-adsorption-303K_1.csv'
+    #mass = 24.4 / 1000 # g
+    file = '1223_303K_uio66.csv'
+    mass = 20.85 / 1000 # g
+    
     mof = MicroCalvet(file,mass)
+
+
+
 
 class MicroCalvet():
     def __init__(self, file_name,mass):
@@ -29,11 +36,12 @@ class MicroCalvet():
         self.index_before = 1
 
         name_column = ['time(min)', 'T_furnace', 'T_sample', 'HeatFlow','Pressure(Gauge)']
-        self.exp_data = pd.read_csv(self.file_name, skiprows=13,header=None,names=name_column,sep='\t',encoding='UTF-16 LE')
+        #self.exp_data = pd.read_csv(self.file_name, skiprows=13,header=None,names=name_column,sep='\t',encoding='UTF-16 LE')
+        self.exp_data = pd.read_csv(self.file_name, skiprows=1,header=None,names=name_column,sep=',',encoding='UTF-8')
         self.__modify_unit()
         self.p_change_index = self.pressure_change_time()
         self.pressure_level, self.heat_level = self.pressure_at_each_step()
-        self.heatflow_integral(self.p_change_index[1],self.p_change_index[2])
+        
         self.Qads_list = self.heatflow_all()
         self.plot_data_P()
         self.plot_data_W()
@@ -41,7 +49,9 @@ class MicroCalvet():
         data_all = [self.pressure_level[:-1]] + [self.pressure_level[1:]]+ [self.Qads_list]
         data_all = pd.DataFrame(data_all).T
         data_all.to_csv('./Results/'+self.file_name.replace('.csv','data_sum.csv'),index=None,header=['low pressure(MPa)','high pressure(MPa)','H_ads(J/g)'])
+        plt.show()
 
+        
     # modify the output unit
     def __modify_unit(self):
         self.time = self.exp_data['time(min)'] * 60 # sec
@@ -52,10 +62,12 @@ class MicroCalvet():
     def pressure_change_time(self):
         p_change_index = [0]
         self.step_time = []
+        dont_record_in_same_step= 400
+        coeff_judge = 0.0028
         for i in range(1, len(self.pressure)-1):
             #if self.pressure[i] > self.pressure[i-1] + 0.005: # when pressure increases by 0.005 MPa
-            if (self.pressure[i+1] + self.pressure[i-1] - 2*self.pressure[i]) > 0.001: # second derivative
-                if max(p_change_index) + 80 < i: # don't record in the same step
+            if ((self.pressure[i+1] + self.pressure[i-1] - 2*self.pressure[i]) > coeff_judge) and (self.pressure[i+1] > self.pressure[i] ): # second derivative
+                if max(p_change_index) + dont_record_in_same_step < i: # don't record in the same step
                     p_change_index.append(i-self.index_before)
                     self.step_time.append(self.time[i-self.index_before])
         
