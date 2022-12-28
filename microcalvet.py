@@ -25,7 +25,7 @@ class MicroCalvet():
         self.file_name = file_name
         self.mass = mass
 
-        # set index pre
+        # how many index you want to set before increase the pressure 
         self.index_before = 1
 
         name_column = ['time(min)', 'T_furnace', 'T_sample', 'HeatFlow','Pressure(Gauge)']
@@ -52,8 +52,9 @@ class MicroCalvet():
     def pressure_change_time(self):
         p_change_index = [0]
         self.step_time = []
-        for i in range(1, len(self.pressure)):
-            if self.pressure[i] > self.pressure[i-1] + 0.005: # when pressure increases by 0.005 MPa
+        for i in range(1, len(self.pressure)-1):
+            #if self.pressure[i] > self.pressure[i-1] + 0.005: # when pressure increases by 0.005 MPa
+            if (self.pressure[i+1] + self.pressure[i-1] - 2*self.pressure[i]) > 0.001: # second derivative
                 if max(p_change_index) + 80 < i: # don't record in the same step
                     p_change_index.append(i-self.index_before)
                     self.step_time.append(self.time[i-self.index_before])
@@ -109,7 +110,6 @@ class MicroCalvet():
         ax.scatter(self.step_time,self.pressure_level,s=20, facecolors='none', edgecolors='r')
         ax.set_xlabel('time [sec]')
         ax.set_ylabel('Pressure [MPa]')
-        #ax.legend(loc='upper left', borderaxespad=0)
         ax.grid()
         fig.savefig('./Fig/'+self.file_name.replace('.csv','pres.png'))
 
@@ -121,7 +121,6 @@ class MicroCalvet():
         ax.scatter(self.step_time,self.heat_level,s=20, facecolors='none', edgecolors='r')
         ax.set_xlabel('time [sec]')
         ax.set_ylabel('HeatFlow [W]')
-        #ax.legend(loc='upper left', borderaxespad=0)
         ax.set_ylim(-0.0015, 0.01)
         #ax.set_ylim(-0.0005, 0.0005)
         #ax.set_xlim(7600,8200)
