@@ -16,11 +16,8 @@ def main():
     ads_heat_data_plot()
 
 def ads_heat_data_plot():
-
-    #file = '1211-UiO66-adsorption-303K_1.csv'
-    #mass = 24.4 / 1000 # g
-    file = '1223_303K_uio66.csv'
-    mass = 20.85 / 1000 # g
+    file = '0105_uio66_288K.csv'
+    mass = 28.2 / 1000 # g
     
     mof = MicroCalvet(file,mass)
 
@@ -36,8 +33,8 @@ class MicroCalvet():
         self.index_before = 1
 
         name_column = ['time(min)', 'T_furnace', 'T_sample', 'HeatFlow','Pressure(Gauge)']
-        #self.exp_data = pd.read_csv(self.file_name, skiprows=13,header=None,names=name_column,sep='\t',encoding='UTF-16 LE')
-        self.exp_data = pd.read_csv(self.file_name, skiprows=1,header=None,names=name_column,sep=',',encoding='UTF-8')
+        self.exp_data = pd.read_csv(self.file_name, skiprows=13,header=None,names=name_column,sep='\t',encoding='UTF-16 LE')
+        #self.exp_data = pd.read_csv(self.file_name, skiprows=1,header=None,names=name_column,sep=',',encoding='UTF-8')
         self.__modify_unit()
         self.p_change_index = self.pressure_change_time()
         self.pressure_level, self.heat_level = self.pressure_at_each_step()
@@ -51,10 +48,10 @@ class MicroCalvet():
         data_all.to_csv('./Results/'+self.file_name.replace('.csv','data_sum.csv'),index=None,header=['low pressure(MPa)','high pressure(MPa)','H_ads(J/g)'])
         plt.show()
 
-        
+
     # modify the output unit
     def __modify_unit(self):
-        self.time = self.exp_data['time(min)'] * 60 # sec
+        self.time = self.exp_data['time(min)'] * 60 * 60 # sec
         self.pressure = self.exp_data['Pressure(Gauge)'] + 0.1 # MPa
         self.heatflow = self.exp_data['HeatFlow'] * 0.001 # W
 
