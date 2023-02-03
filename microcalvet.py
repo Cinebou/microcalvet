@@ -1,3 +1,8 @@
+"""
+Author: Hibiki Kimura, 2023/02/03
+"""
+
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
